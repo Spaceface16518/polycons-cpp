@@ -64,6 +64,7 @@ int main() {
                 window.close();
         }
 
+        // Clear the window to a blank white background
         window.clear(sf::Color(0, 0, 0, 0));
 
         // Plan drawing
@@ -74,8 +75,8 @@ int main() {
 
             // Plan the drawing of the current particle
             sf::RectangleShape rect(sf::Vector2f(particleSize, particleSize));
-            rect.setPosition(current->x, current->y);
-            rect.setFillColor(sf::Color(255, 255, 255, 255));
+            rect.setPosition(current->x, current->y); // copy the position from the struct
+            rect.setFillColor(sf::Color(255, 255, 255, 255)); // black
             particleRects[i] = rect;
 
             // Search other particles for possible lines
@@ -83,9 +84,11 @@ int main() {
                 if (i != j) {
                     Particle *other = &particles[j];
 
+                    // Find the distance between the particles
                     float distanceX = abs(current->x - other->x);
                     float distanceY = abs(current->y - other->y);
 
+                    // If particles are close enough, draw a line
                     if (distanceX < threshold && distanceY < threshold) {
                         line(lines, *current, *other, static_cast<float>(particleSize));
                     }
@@ -104,9 +107,11 @@ int main() {
 
         // Step particle world
         for (auto &particle : particles) {
+            // Step the particles' positions by their velocities
             particle.x += particle.vx;
             particle.y += particle.vy;
 
+            // Bounce off the walls
             if (particle.x > windowSize.x - particleSize || particle.x <= 0) {
                 particle.vx = -particle.vx;
             }
