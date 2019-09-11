@@ -1,6 +1,34 @@
 #include "SFML/Graphics.hpp"
 #include <random>
 
+#ifdef MAX_PARTICLES
+const int maxParticles = MAX_PARTICLES;
+#else
+
+const int maxParticles = 40;
+
+#endif
+
+#ifndef POINT_RATIO
+#define POINT_RATIO 1
+#endif
+
+#ifdef PARTICLE_SIZE
+const float particleSize = PARTICLE_SIZE * POINT_RATIO;
+#else
+
+const float particleSize = 4 * POINT_RATIO;
+
+#endif
+
+#ifdef THRESHOLD
+const float threshold = THRESHOLD * POINT_RATIO;
+#else
+
+const float threshold = 75 * POINT_RATIO;
+
+#endif
+
 typedef std::mt19937 Rng;
 
 struct Particle {
@@ -11,34 +39,12 @@ struct Particle {
 };
 
 
-void line(sf::VertexArray &vertices, Particle &p1, Particle &p2, float particleSize);
+void line(sf::VertexArray &vertices, Particle &p1, Particle &p2, float combinedDistance);
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(800 * POINT_RATIO, 600 * POINT_RATIO), "Polycons: particle constellations",
                             sf::Style::Default, sf::ContextSettings(0, 0, 16, 1, 1));
     window.setFramerateLimit(60);
-
-#ifdef MAX_PARTICLES
-    const int maxParticles = MAX_PARTICLES;
-#else
-    const int maxParticles = 40;
-#endif
-
-#ifndef POINT_RATIO
-#define POINT_RATIO 1
-#endif
-
-#ifdef PARTICLE_SIZE
-    const auto particleSize = PARTICLE_SIZE * POINT_RATIO;
-#else
-    const auto particleSize = 4 * POINT_RATIO;
-#endif
-
-#ifdef THRESHOLD
-    const auto threshold = THRESHOLD * POINT_RATIO;
-#else
-    const auto threshold = 100 * POINT_RATIO;
-#endif
 
     Particle particles[maxParticles];
 
@@ -47,7 +53,7 @@ int main() {
     auto windowSize = window.getSize();
     std::uniform_real_distribution<float> widthDistribution(0, windowSize.x);
     std::uniform_real_distribution<float> heightDistribution(0, windowSize.y);
-    std::uniform_real_distribution<float> velocityDistribution(-2.0, 2.0);
+    std::uniform_real_distribution<float> velocityDistribution(-1 * POINT_RATIO, 1 * POINT_RATIO);
     for (auto &particle : particles) {
         particle = Particle{
                 .x = widthDistribution(rng),
@@ -90,7 +96,7 @@ int main() {
 
                     // If particles are close enough, draw a line
                     if (distanceX < threshold && distanceY < threshold) {
-                        line(lines, *current, *other, static_cast<float>(particleSize));
+                        line(lines, *current, *other, 255 - floor(distanceX + distanceY));
                     }
                 }
             }
@@ -124,7 +130,8 @@ int main() {
     return 0;
 }
 
-void line(sf::VertexArray &vertices, Particle &p1, Particle &p2, float particleSize) {
-    vertices.append(sf::Vertex(sf::Vector2f(p1.x + particleSize / 2, p1.y + particleSize / 2))); // p1
-    vertices.append(sf::Vertex(sf::Vector2f(p2.x + particleSize / 2, p2.y + particleSize / 2))); // p2
+void line(sf::VertexArray &vertices, Particle &p1, Particle &p2, float alpha) {
+    auto color = sf::Color(255, 255, 255, alpha);
+    vertices.append(sf::Vertex(sf::Vector2f(p1.x + particleSize / 2, p1.y + particleSize / 2), color)); // p1
+    vertices.append(sf::Vertex(sf::Vector2f(p2.x + particleSize / 2, p2.y + particleSize / 2), color)); // p2
 }
