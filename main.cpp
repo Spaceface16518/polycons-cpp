@@ -18,9 +18,28 @@ int main() {
                             sf::Style::Default, sf::ContextSettings(0, 0, 16, 1, 1));
     window.setFramerateLimit(60);
 
-    const auto maxParticles = 40;
+#ifdef MAX_PARTICLES
+    const int maxParticles = MAX_PARTICLES;
+#else
+    const int maxParticles = 40;
+#endif
+
+#ifndef POINT_RATIO
+#define POINT_RATIO 1
+#endif
+
+#ifdef PARTICLE_SIZE
+    const auto particleSize = PARTICLE_SIZE * POINT_RATIO;
+#else
     const auto particleSize = 4 * POINT_RATIO;
+#endif
+
+#ifdef THRESHOLD
+    const auto threshold = THRESHOLD * POINT_RATIO;
+#else
     const auto threshold = 100 * POINT_RATIO;
+#endif
+
     Particle particles[maxParticles];
 
     std::random_device rd;
